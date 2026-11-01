@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0-beta.2](https://github.com/Scoolnik/woff2-encoder/compare/v3.0.0-beta.1...v3.0.0-beta.2) (2026-11-01)
+
+### Features
+
+* add `compressSync()` to the package root and `decompressSync()` to both entry points, returning `Uint8Array` after module initialization
+* add the `MODULE_NOT_INITIALIZED` error code for synchronous calls made before their entry point's WASM module is ready; await `preload()` before using the synchronous APIs
+* share WASM module state and runtime-crash recovery between synchronous and asynchronous operations within each entry point
+
 ## [3.0.0](https://github.com/itskyedo/woff2-encoder/compare/v2.0.0...v3.0.0-beta.1)
 
 ### ⚠ BREAKING CHANGES

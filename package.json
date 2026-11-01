@@ -1,6 +1,6 @@
 {
   "name": "@scoolnik/woff2-encoder",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-beta.2",
   "description": "A TypeScript library for handling WOFF2 encoding using WebAssembly",
   "author": "Kyedo <hey@kyedo.dev> (https://github.com/itskyedo)",
   "license": "MIT",
