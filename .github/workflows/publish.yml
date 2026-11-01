@@ -1,0 +1,87 @@
+name: Stage npm package
+
+on:
+  release:
+    types:
+      - published
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: Stage package for npm approval
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout release
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24.x'
+          registry-url: https://registry.npmjs.org
+          scope: '@scoolnik'
+          package-manager-cache: false
+
+      - name: Install npm with staged publishing support
+        run: npm install --global 'npm@^11.15.0'
+
+      - name: Validate release version
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+
+          const { name, version } = JSON.parse(readFileSync('package.json', 'utf8'));
+          if (name !== '@scoolnik/woff2-encoder') {
+            throw new Error(`Unexpected package name: ${name}`);
+          }
+          const releaseTag = process.env.RELEASE_TAG;
+          if (releaseTag !== version && releaseTag !== `v${version}`) {
+            throw new Error(`Release tag ${releaseTag} must match package version ${version}`);
+          }
+          const prerelease = version.includes('-') || process.env.RELEASE_PRERELEASE === 'true';
+          const distTag = prerelease ? 'beta' : 'latest';
+          appendFileSync(process.env.GITHUB_OUTPUT, `dist-tag=${distTag}\n`);
+          NODE
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check source
+        run: pnpm check
+
+      - name: Run unit tests
+        run: pnpm test
+
+      - name: Build package
+        run: pnpm build
+
+      - name: Check package exports
+        run: pnpm test:e2e:exports
+
+      - name: Check published package types
+        run: pnpm check:package
+
+      - name: Stage package for approval
+        run: npm stage publish --access public --tag "$RELEASE_DIST_TAG"
+        env:
+          RELEASE_DIST_TAG: ${{ steps.release.outputs.dist-tag }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: ${{ !github.event.repository.private }}

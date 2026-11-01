@@ -3,19 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>woff2-encoder E2E</title>
+    <title>@scoolnik/woff2-encoder E2E</title>
     <script type="importmap">
       {
         "imports": {
           "opentype.js": "/node_modules/opentype.js/dist/opentype.mjs",
-          "woff2-encoder": "/dist/index.mjs",
-          "woff2-encoder/decompress": "/dist/decompress.mjs"
+          "@scoolnik/woff2-encoder": "/dist/index.mjs",
+          "@scoolnik/woff2-encoder/decompress": "/dist/decompress.mjs"
         }
       }
     </script>
   </head>
   <body>
-    <main>woff2-encoder browser fixture</main>
+    <main>@scoolnik/woff2-encoder browser fixture</main>
     <script type="module">
       const fixtureCache = new Map();
 
@@ -60,26 +60,26 @@
       }
 
       async function compressMatches(inputName, expectedName) {
-        const { compress } = await import('woff2-encoder');
+        const { compress } = await import('@scoolnik/woff2-encoder');
         const actual = await compress(await readFixture(inputName));
         return compareBytes(actual, await readFixture(expectedName));
       }
 
       async function compressArrayBufferMatches(inputName, expectedName) {
-        const { compress } = await import('woff2-encoder');
+        const { compress } = await import('@scoolnik/woff2-encoder');
         const input = await readFixture(inputName);
         const actual = await compress(input.buffer);
         return compareBytes(actual, await readFixture(expectedName));
       }
 
       async function decompressMatches(inputName, expectedName) {
-        const { decompress } = await import('woff2-encoder');
+        const { decompress } = await import('@scoolnik/woff2-encoder');
         const actual = await decompress(await readFixture(inputName));
         return compareBytes(actual, await readFixture(expectedName));
       }
 
       async function decompressArrayBufferMatches(inputName, expectedName) {
-        const { decompress } = await import('woff2-encoder');
+        const { decompress } = await import('@scoolnik/woff2-encoder');
         const input = await readFixture(inputName);
         const actual = await decompress(input.buffer);
         return compareBytes(actual, await readFixture(expectedName));
@@ -87,15 +87,15 @@
 
       async function subpathDecompressMatches(inputName, expectedName) {
         const { default: decompress } = await import(
-          'woff2-encoder/decompress'
+          '@scoolnik/woff2-encoder/decompress'
         );
         const actual = await decompress(await readFixture(inputName));
         return compareBytes(actual, await readFixture(expectedName));
       }
 
       async function syncCallsBeforePreload() {
-        const root = await import('woff2-encoder');
-        const subpath = await import('woff2-encoder/decompress');
+        const root = await import('@scoolnik/woff2-encoder');
+        const subpath = await import('@scoolnik/woff2-encoder/decompress');
         const input = new Uint8Array();
         return [
           () => root.compressSync(input),
@@ -115,7 +115,7 @@
       }
 
       async function compressSyncMatches(inputName, expectedName, asArrayBuffer) {
-        const { compressSync, preload } = await import('woff2-encoder');
+        const { compressSync, preload } = await import('@scoolnik/woff2-encoder');
         const input = await readFixture(inputName);
         await preload();
         const actual = compressSync(asArrayBuffer ? toArrayBuffer(input) : input);
@@ -123,7 +123,7 @@
       }
 
       async function decompressSyncMatches(inputName, expectedName, asArrayBuffer) {
-        const { decompressSync, preload } = await import('woff2-encoder');
+        const { decompressSync, preload } = await import('@scoolnik/woff2-encoder');
         const input = await readFixture(inputName);
         await preload();
         const actual = decompressSync(asArrayBuffer ? toArrayBuffer(input) : input);
@@ -131,7 +131,7 @@
       }
 
       async function subpathDecompressSyncMatches(inputName, expectedName, asArrayBuffer) {
-        const { decompressSync, preload } = await import('woff2-encoder/decompress');
+        const { decompressSync, preload } = await import('@scoolnik/woff2-encoder/decompress');
         const input = await readFixture(inputName);
         await preload();
         const actual = decompressSync(asArrayBuffer ? toArrayBuffer(input) : input);
@@ -140,7 +140,7 @@
 
       async function parseDecompressedFont(inputName) {
         const [{ decompress }, { parse }] = await Promise.all([
-          import('woff2-encoder'),
+          import('@scoolnik/woff2-encoder'),
           import('opentype.js'),
         ]);
         const font = parse(
@@ -154,7 +154,7 @@
       }
 
       async function repeatedCallsMatch() {
-        const { compress, decompress } = await import('woff2-encoder');
+        const { compress, decompress } = await import('@scoolnik/woff2-encoder');
         const originalTtf = await readFixture('og.ttf');
         const originalWoff2 = await readFixture('og.woff2');
         const expectedWoff2 = await readFixture('enc-ttf.woff2');
@@ -169,7 +169,7 @@
       }
 
       async function concurrentCallsMatch() {
-        const { compress, decompress } = await import('woff2-encoder');
+        const { compress, decompress } = await import('@scoolnik/woff2-encoder');
         const originalTtf = await readFixture('og.ttf');
         const originalWoff2 = await readFixture('og.woff2');
         const expectedWoff2 = await readFixture('enc-ttf.woff2');

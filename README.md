@@ -1,8 +1,6 @@
-# woff2-encoder
+# @scoolnik/woff2-encoder
 
-[![License: MIT](https://img.shields.io/github/license/itskyedo/woff2-encoder?color=blue)](https://github.com/itskyedo/woff2-encoder/blob/main/LICENSE)
-[![NPM Version](https://img.shields.io/npm/v/woff2-encoder.svg?logo=npm&color=red)](https://npmjs.org/package/woff2-encoder)
-[![Download Count](https://img.shields.io/npm/dm/woff2-encoder.svg?color=brightgreen)](https://npmjs.org/package/woff2-encoder)
+[![License: MIT](https://img.shields.io/github/license/Scoolnik/woff2-encoder?color=blue)](https://github.com/Scoolnik/woff2-encoder/blob/main/LICENSE)
 
 > [!IMPORTANT]
 > You are currently viewing the docs for the upcoming v3 release, which is currently in beta.
@@ -22,14 +20,16 @@ A TypeScript library for handling WOFF2 encoding using WebAssembly.
 
 #### Installation
 
+Install the public package from npmjs.org:
+
 ```console
-npm install woff2-encoder@beta
+npm install @scoolnik/woff2-encoder@beta
 ```
 
 ## 🗒️ Notes
 
 If you only need to decompress WOFF2 files, it's recommended that you import
-from `woff2-encoder/decompress` (see the [Decompress only](#decompress-only)
+from `@scoolnik/woff2-encoder/decompress` (see the [Decompress only](#decompress-only)
 example below). This will net your end users a significant decrease in bundle
 size as it uses its own separate WASM file with a much smaller footprint.
 
@@ -56,7 +56,7 @@ Compresses SFNT (TrueType/OpenType) font data to WOFF2 font data.
 
 Synchronously compresses SFNT (TrueType/OpenType) font data to WOFF2 font data.
 
-Await `preload()` from `woff2-encoder` before the first call. Calling this before
+Await `preload()` from `@scoolnik/woff2-encoder` before the first call. Calling this before
 initialization completes throws `Woff2ErrorCode.MODULE_NOT_INITIALIZED`. Invalid
 SFNT data throws `Woff2ErrorCode.COMPRESS_FAILED`.
 
@@ -79,8 +79,8 @@ Decompresses WOFF2 font data back to SFNT (TrueType/OpenType) font data.
 ### `decompressSync`
 
 Synchronously decompresses WOFF2 font data back to SFNT (TrueType/OpenType) data.
-Available as a named export from both `woff2-encoder` and
-`woff2-encoder/decompress`.
+Available as a named export from both `@scoolnik/woff2-encoder` and
+`@scoolnik/woff2-encoder/decompress`.
 
 Await `preload()` from the same entry point before the first call. Calling this
 before initialization completes throws `Woff2ErrorCode.MODULE_NOT_INITIALIZED`.
@@ -97,7 +97,7 @@ size above `MAX_DECOMPRESSED_SIZE` throws `Woff2ErrorCode.MAX_SIZE_EXCEEDED`.
 
 Eagerly initializes the WASM module so the first `compress` or `decompress`
 call does not pay the one-time instantiation cost. Both the package root and
-the `woff2-encoder/decompress` subpath export their own `preload`.
+the `@scoolnik/woff2-encoder/decompress` subpath export their own `preload`.
 
 Asynchronous operations initialize automatically on first use. For
 `compressSync` and `decompressSync`, call and await `preload()` before use;
@@ -105,7 +105,7 @@ starting initialization without awaiting it is not sufficient. A completed
 asynchronous conversion also leaves that entry point ready for synchronous calls.
 
 The two entry points initialize separate WASM instances. Preloading the package
-root does not initialize `woff2-encoder/decompress`, or vice versa. Repeated and
+root does not initialize `@scoolnik/woff2-encoder/decompress`, or vice versa. Repeated and
 concurrent calls to an entry point's `preload()` share the same initialization.
 
 If an operation throws `WebAssembly.RuntimeError`, the cached instance is
@@ -134,7 +134,11 @@ Returns whether an unknown value is an error thrown by this library.
 The codes are also available with the `Woff2ErrorCode` object.
 
 ```typescript
-import { decompress, isWoff2Error, Woff2ErrorCode } from 'woff2-encoder';
+import {
+  decompress,
+  isWoff2Error,
+  Woff2ErrorCode,
+} from '@scoolnik/woff2-encoder';
 
 try {
   await decompress(fontBuffer);
@@ -160,7 +164,7 @@ library. Fonts whose WOFF2 header declares a larger size are rejected by
 
 ```typescript
 import fs from 'node:fs';
-import { compress } from 'woff2-encoder';
+import { compress } from '@scoolnik/woff2-encoder';
 
 async function example() {
   const fontFile = fs.readFileSync('./my-font.ttf');
@@ -171,7 +175,7 @@ async function example() {
 ### Decompress a WOFF2 font from a URL
 
 ```typescript
-import { decompress } from 'woff2-encoder';
+import { decompress } from '@scoolnik/woff2-encoder';
 
 async function example() {
   const fontBuffer = await fetch('https://example.com/my-font.woff2').then(
@@ -187,7 +191,7 @@ async function example() {
 ```typescript
 import fs from 'node:fs';
 import opentype from 'opentype.js';
-import { decompress } from 'woff2-encoder';
+import { decompress } from '@scoolnik/woff2-encoder';
 
 async function example() {
   const fontFile = fs.readFileSync('./my-font.woff2');
@@ -206,7 +210,7 @@ the first compress/decompress call.
 
 ```typescript
 import fs from 'node:fs';
-import { compress, preload } from 'woff2-encoder';
+import { compress, preload } from '@scoolnik/woff2-encoder';
 
 async function startup() {
   // Initialize the WASM module before it's needed.
@@ -228,7 +232,7 @@ run the conversion on the calling thread.
 
 ```typescript
 import fs from 'node:fs';
-import { compressSync, decompressSync, preload } from 'woff2-encoder';
+import { compressSync, decompressSync, preload } from '@scoolnik/woff2-encoder';
 
 await preload();
 
@@ -249,7 +253,7 @@ which is 70% smaller.
 ```typescript
 import fs from 'node:fs';
 import opentype from 'opentype.js';
-import decompress from 'woff2-encoder/decompress';
+import decompress from '@scoolnik/woff2-encoder/decompress';
 
 async function example() {
   const fontBuffer = await fetch('https://example.com/my-font.woff2').then(
@@ -265,7 +269,7 @@ await the subpath's own `preload`:
 
 ```typescript
 import fs from 'node:fs';
-import { decompressSync, preload } from 'woff2-encoder/decompress';
+import { decompressSync, preload } from '@scoolnik/woff2-encoder/decompress';
 
 await preload();
 

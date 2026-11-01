@@ -11,14 +11,14 @@ import {
   MAX_DECOMPRESSED_SIZE,
   preload,
   Woff2ErrorCode,
-} from 'woff2-encoder';
+} from '@scoolnik/woff2-encoder';
 import subpathDecompress, {
   decompressSync as subpathDecompressSync,
   isWoff2Error as subpathIsWoff2Error,
   MAX_DECOMPRESSED_SIZE as subpathMaxDecompressedSize,
   preload as subpathPreload,
   Woff2ErrorCode as subpathWoff2ErrorCode,
-} from 'woff2-encoder/decompress';
+} from '@scoolnik/woff2-encoder/decompress';
 
 const fixturesDir = new URL('../fixtures/', import.meta.url);
 const originalTtf = await readFile(new URL('og.ttf', fixturesDir));
@@ -78,8 +78,8 @@ assert.equal(
 
 // CJS consumers load the ESM build through require(esm)
 const require = createRequire(import.meta.url);
-const required = require('woff2-encoder');
-const requiredDecompress = require('woff2-encoder/decompress');
+const required = require('@scoolnik/woff2-encoder');
+const requiredDecompress = require('@scoolnik/woff2-encoder/decompress');
 
 assert.equal(typeof required.compress, 'function');
 assert.equal(typeof required.decompress, 'function');

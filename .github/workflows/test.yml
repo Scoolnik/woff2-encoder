@@ -189,7 +189,7 @@ jobs:
           cp tests/e2e/package-exports.mjs "$SMOKE/tests/e2e/"
           cd "$SMOKE"
           npm init -y
-          npm install "$RUNNER_TEMP"/woff2-encoder-*.tgz
+          npm install "$RUNNER_TEMP"/scoolnik-woff2-encoder-*.tgz
           node tests/e2e/package-exports.mjs
 
   test-result:
