@@ -93,6 +93,51 @@
         return compareBytes(actual, await readFixture(expectedName));
       }
 
+      async function syncCallsBeforePreload() {
+        const root = await import('woff2-encoder');
+        const subpath = await import('woff2-encoder/decompress');
+        const input = new Uint8Array();
+        return [
+          () => root.compressSync(input),
+          () => root.decompressSync(input),
+          () => subpath.decompressSync(input),
+        ].map((call) => {
+          try {
+            call();
+            return null;
+          } catch (error) {
+            if (!root.isWoff2Error(error)) {
+              throw error;
+            }
+            return error.code;
+          }
+        });
+      }
+
+      async function compressSyncMatches(inputName, expectedName, asArrayBuffer) {
+        const { compressSync, preload } = await import('woff2-encoder');
+        const input = await readFixture(inputName);
+        await preload();
+        const actual = compressSync(asArrayBuffer ? toArrayBuffer(input) : input);
+        return compareBytes(actual, await readFixture(expectedName));
+      }
+
+      async function decompressSyncMatches(inputName, expectedName, asArrayBuffer) {
+        const { decompressSync, preload } = await import('woff2-encoder');
+        const input = await readFixture(inputName);
+        await preload();
+        const actual = decompressSync(asArrayBuffer ? toArrayBuffer(input) : input);
+        return compareBytes(actual, await readFixture(expectedName));
+      }
+
+      async function subpathDecompressSyncMatches(inputName, expectedName, asArrayBuffer) {
+        const { decompressSync, preload } = await import('woff2-encoder/decompress');
+        const input = await readFixture(inputName);
+        await preload();
+        const actual = decompressSync(asArrayBuffer ? toArrayBuffer(input) : input);
+        return compareBytes(actual, await readFixture(expectedName));
+      }
+
       async function parseDecompressedFont(inputName) {
         const [{ decompress }, { parse }] = await Promise.all([
           import('woff2-encoder'),
@@ -155,6 +200,10 @@
         parseDecompressedFont,
         repeatedCallsMatch,
         subpathDecompressMatches,
+        syncCallsBeforePreload,
+        compressSyncMatches,
+        decompressSyncMatches,
+        subpathDecompressSyncMatches,
       };
       document.body.dataset.status = 'ready';
     </script>

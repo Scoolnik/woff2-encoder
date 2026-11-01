@@ -5,6 +5,7 @@ export const Woff2ErrorCode = Object.freeze({
   COMPRESS_FAILED: 'COMPRESS_FAILED',
   DECOMPRESS_FAILED: 'DECOMPRESS_FAILED',
   MAX_SIZE_EXCEEDED: 'MAX_SIZE_EXCEEDED',
+  MODULE_NOT_INITIALIZED: 'MODULE_NOT_INITIALIZED',
 } as const);
 
 /**
@@ -18,6 +19,8 @@ const WOFF2_ERROR_MESSAGES: Readonly<Record<Woff2ErrorCode, string>> =
     COMPRESS_FAILED: 'Failed to compress the font data.',
     DECOMPRESS_FAILED: 'Failed to decompress the font data.',
     MAX_SIZE_EXCEEDED: 'Font decompressed output size cannot exceed 30 MB.',
+    MODULE_NOT_INITIALIZED:
+      'WOFF2 module is not initialized. Call and await preload() first.',
   });
 
 /**

@@ -22,6 +22,22 @@ interface BrowserFixture {
     inputName: string,
     expectedName: string
   ): Promise<MatchResult>;
+  syncCallsBeforePreload(): Promise<(string | null)[]>;
+  compressSyncMatches(
+    inputName: string,
+    expectedName: string,
+    asArrayBuffer: boolean
+  ): Promise<MatchResult>;
+  decompressSyncMatches(
+    inputName: string,
+    expectedName: string,
+    asArrayBuffer: boolean
+  ): Promise<MatchResult>;
+  subpathDecompressSyncMatches(
+    inputName: string,
+    expectedName: string,
+    asArrayBuffer: boolean
+  ): Promise<MatchResult>;
   concurrentCallsMatch(): Promise<MatchResult[]>;
   decompressArrayBufferMatches(
     inputName: string,
@@ -163,3 +179,69 @@ test('reload can initialize and call the modules again', async ({ page }) => {
     )
   );
 });
+
+test('sync APIs reject calls before preload in the browser', async ({
+  page,
+}) => {
+  const codes = await page.evaluate(() =>
+    window.woff2E2E.syncCallsBeforePreload()
+  );
+
+  expect(codes).toEqual([
+    'MODULE_NOT_INITIALIZED',
+    'MODULE_NOT_INITIALIZED',
+    'MODULE_NOT_INITIALIZED',
+  ]);
+});
+
+for (const asArrayBuffer of [false, true]) {
+  const inputType = asArrayBuffer ? 'ArrayBuffer' : 'Uint8Array';
+
+  test(`compressSync accepts ${inputType} after preload in the browser`, async ({
+    page,
+  }) => {
+    const result = await page.evaluate(
+      (useArrayBuffer) =>
+        window.woff2E2E.compressSyncMatches(
+          'og.ttf',
+          'enc-ttf.woff2',
+          useArrayBuffer
+        ),
+      asArrayBuffer
+    );
+
+    expectMatch(result);
+  });
+
+  test(`decompressSync accepts ${inputType} after preload in the browser`, async ({
+    page,
+  }) => {
+    const result = await page.evaluate(
+      (useArrayBuffer) =>
+        window.woff2E2E.decompressSyncMatches(
+          'og.woff2',
+          'dec-woff2.ttf',
+          useArrayBuffer
+        ),
+      asArrayBuffer
+    );
+
+    expectMatch(result);
+  });
+
+  test(`subpath decompressSync accepts ${inputType} after preload in the browser`, async ({
+    page,
+  }) => {
+    const result = await page.evaluate(
+      (useArrayBuffer) =>
+        window.woff2E2E.subpathDecompressSyncMatches(
+          'og.woff2',
+          'dec-woff2.ttf',
+          useArrayBuffer
+        ),
+      asArrayBuffer
+    );
+
+    expectMatch(result);
+  });
+}

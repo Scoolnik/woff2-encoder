@@ -4,13 +4,16 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import {
   compress,
+  compressSync,
   decompress,
+  decompressSync,
   isWoff2Error,
   MAX_DECOMPRESSED_SIZE,
   preload,
   Woff2ErrorCode,
 } from 'woff2-encoder';
 import subpathDecompress, {
+  decompressSync as subpathDecompressSync,
   isWoff2Error as subpathIsWoff2Error,
   MAX_DECOMPRESSED_SIZE as subpathMaxDecompressedSize,
   preload as subpathPreload,
@@ -22,11 +25,28 @@ const originalTtf = await readFile(new URL('og.ttf', fixturesDir));
 const originalWoff2 = await readFile(new URL('og.woff2', fixturesDir));
 const expectedWoff2 = await readFile(new URL('enc-ttf.woff2', fixturesDir));
 const expectedTtf = await readFile(new URL('dec-woff2.ttf', fixturesDir));
+for (const call of [
+  () => compressSync(originalTtf),
+  () => decompressSync(originalWoff2),
+  () => subpathDecompressSync(originalWoff2),
+]) {
+  assert.throws(
+    call,
+    (error) =>
+      isWoff2Error(error) &&
+      subpathIsWoff2Error(error) &&
+      error.code === Woff2ErrorCode.MODULE_NOT_INITIALIZED
+  );
+}
+
 const compressed = await compress(originalTtf);
 const decompressed = await decompress(originalWoff2);
 const subpathDecompressed = await subpathDecompress(originalWoff2);
 
 assert.equal(typeof compress, 'function');
+assert.equal(typeof compressSync, 'function');
+assert.equal(typeof decompressSync, 'function');
+assert.equal(typeof subpathDecompressSync, 'function');
 assert.equal(typeof decompress, 'function');
 assert.equal(typeof preload, 'function');
 assert.equal(typeof subpathDecompress, 'function');
@@ -49,6 +69,13 @@ assert.equal(Buffer.compare(Buffer.from(compressed), expectedWoff2), 0);
 assert.equal(Buffer.compare(Buffer.from(decompressed), expectedTtf), 0);
 assert.equal(Buffer.compare(Buffer.from(subpathDecompressed), expectedTtf), 0);
 
+assert.equal(Buffer.compare(compressSync(originalTtf), expectedWoff2), 0);
+assert.equal(Buffer.compare(decompressSync(originalWoff2), expectedTtf), 0);
+assert.equal(
+  Buffer.compare(subpathDecompressSync(originalWoff2), expectedTtf),
+  0
+);
+
 // CJS consumers load the ESM build through require(esm)
 const require = createRequire(import.meta.url);
 const required = require('woff2-encoder');
@@ -57,6 +84,9 @@ const requiredDecompress = require('woff2-encoder/decompress');
 assert.equal(typeof required.compress, 'function');
 assert.equal(typeof required.decompress, 'function');
 assert.equal(typeof required.preload, 'function');
+assert.equal(typeof required.compressSync, 'function');
+assert.equal(typeof required.decompressSync, 'function');
+assert.equal(typeof requiredDecompress.decompressSync, 'function');
 assert.equal(typeof requiredDecompress.default, 'function');
 assert.equal(typeof requiredDecompress.preload, 'function');
 
@@ -65,3 +95,18 @@ const requiredDecompressed = await requiredDecompress.default(originalWoff2);
 
 assert.equal(Buffer.compare(Buffer.from(requiredCompressed), expectedWoff2), 0);
 assert.equal(Buffer.compare(Buffer.from(requiredDecompressed), expectedTtf), 0);
+
+await required.preload();
+await requiredDecompress.preload();
+assert.equal(
+  Buffer.compare(required.compressSync(originalTtf), expectedWoff2),
+  0
+);
+assert.equal(
+  Buffer.compare(required.decompressSync(originalWoff2), expectedTtf),
+  0
+);
+assert.equal(
+  Buffer.compare(requiredDecompress.decompressSync(originalWoff2), expectedTtf),
+  0
+);
